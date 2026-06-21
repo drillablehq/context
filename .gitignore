@@ -1,0 +1,11 @@
+# build artifacts — the *.md facts are the source of truth, the DB is rebuilt by seed.py
+*.db
+__pycache__/
+*.pyc
+
+# personal/house configs (point at local dirs) — ship configs/config.example.json instead
+configs/*.json
+!configs/config.example.json
+
+# internal validation (house-specific corpora — memory slugs, drillable-check facts) stays private
+eval/

@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "drillable-context": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/src/server.py",
+        "--facts-dir", "${user_config.facts_dir}",
+        "--name", "context",
+        "--oracle-repo", "${user_config.oracle_repo}"
+      ],
+      "env": {
+        "DRILLABLE_EMBED": "${user_config.semantic_retrieval}"
+      }
+    }
+  }
+}

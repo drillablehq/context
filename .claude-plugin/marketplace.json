@@ -1,0 +1,13 @@
+{
+  "name": "drillable",
+  "description": "Drillable's developer tools — ground your coding agent in real, cited sources instead of guesses.",
+  "owner": { "name": "Drillable", "url": "https://drillable.com" },
+  "plugins": [
+    {
+      "name": "drillable-context",
+      "source": "./",
+      "description": "Grounds your coding agent in YOUR project's facts (your docs/decisions/conventions) — drills them instead of guessing, abstains instead of bluffing. A local MCP over a folder of markdown.",
+      "version": "0.1.0"
+    }
+  ]
+}

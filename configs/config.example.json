@@ -1,0 +1,9 @@
+{
+  "name": "context",
+  "facts_dir": "/absolute/path/to/your/markdown/facts",
+  "oracle_repo": null,
+  "standing_types": ["preference"],
+  "type_field": "type",
+  "recursive": true,
+  "embed": false
+}

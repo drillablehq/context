@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "drillable-context",
+  "displayName": "Drillable Context",
+  "version": "0.1.0",
+  "description": "Grounds your coding agent in YOUR project's facts — your docs, decisions, and conventions — so it drills them instead of guessing, and says \"no record\" instead of bluffing. A local MCP server over a folder of markdown you point it at.",
+  "author": { "name": "Drillable", "url": "https://drillable.com" },
+  "homepage": "https://drillable.com",
+  "repository": "https://github.com/drillablehq/drillable-context",
+  "keywords": ["grounding", "context", "memory", "conventions", "drillable", "mcp"],
+  "defaultEnabled": false,
+  "userConfig": {
+    "facts_dir": {
+      "type": "directory",
+      "title": "Facts directory",
+      "description": "A folder of markdown your agent should ground in — your docs/, notes, decisions, conventions. The .md files stay your source of truth.",
+      "required": true
+    },
+    "oracle_repo": {
+      "type": "directory",
+      "title": "Oracle repo (optional)",
+      "description": "A code repo to re-check file/PR references against, so a fact citing a moved file is flagged stale. Leave blank to ground against the facts themselves.",
+      "required": false
+    },
+    "semantic_retrieval": {
+      "type": "boolean",
+      "title": "Semantic retrieval (sends facts to OpenAI to embed)",
+      "description": "Embed your facts for semantic search — recommended for a large corpus (recall@3 ~94% vs ~67% keyword). Requires OPENAI_API_KEY in your environment and sends your facts' text to OpenAI. Off = fully local keyword retrieval.",
+      "required": false
+    }
+  }
+}
