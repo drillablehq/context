@@ -16,9 +16,15 @@ config.json:
     "standing_types": ["preference"],           # frontmatter `type` values that stay ALWAYS-LOADED
     "type_field":     "type",                   # frontmatter field carrying the type (default "type")
     "index_file":     "INDEX.md",               # OPTIONAL: "- [Title](slug.md) — hook" lines for titles
-    "track_drift":    false                     # OPTIONAL: flag a cited fact whose source changed after
+    "track_drift":    false,                    # OPTIONAL: flag a cited fact whose source changed after
                                                 #   it (re-verify). Off by default — noisy in a co-evolving
                                                 #   monorepo; signal when oracle_repo is a SEPARATE code repo
+    "doc2query":      false                     # OPTIONAL: index-side expansion (docTTTTTquery). Append
+                                                #   LLM-predicted lay-questions to each chunk's EMBEDDING
+                                                #   text only (never the served text) — lifts vocab-foreign
+                                                #   recall (a lay-worded query the chunk's own vocabulary
+                                                #   doesn't match). One-time LLM cost at seed, cached by
+                                                #   content hash; the query path is unchanged. Needs embed.
   }
 
 THE SPLIT: standing (must fire every turn — preferences/standing instructions) vs queryable (the
@@ -29,12 +35,14 @@ it is NOT a truth oracle.
 """
 import argparse
 import glob
+import hashlib
 import json
 import os
 import re
 import sqlite3
 import subprocess
 import sys
+import urllib.request
 from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -66,6 +74,43 @@ def split_sections(body):
         end = marks[i + 1].start() if i + 1 < len(marks) else len(body)
         out.append((m.group(2).strip(), body[m.start():end].strip()))
     return out
+
+def doc2query_aug(etexts, cache_path, model="gpt-4o-mini"):
+    """doc2query / docTTTTTquery (Nogueira & Lin 2019): for each chunk, predict the lay QUESTIONS it
+    answers and append them to the EMBEDDING text only — never to the served text. They are a retrieval
+    KEY, not content (so honesty is preserved: nothing synthetic is ever shown or cited). This lifts
+    vocab-foreign recall — a query phrased in everyday words whose terms the chunk itself never uses
+    (measured: foreign recall@1 25→67%, @3 58→83%, with no precision cost; see the hub decision
+    `context-search-vocab-foreign-fix-stays-per-finding-alias`). Cached by content hash, so a re-seed
+    regenerates ONLY changed chunks. Offline/one-time; the query path is unchanged.
+
+    Returns (augmented_texts, n_generated)."""
+    key = os.environ.get("OPENAI_API_KEY")
+    cache = {}
+    if os.path.exists(cache_path):
+        try:
+            cache = json.load(open(cache_path))
+        except Exception:
+            cache = {}
+    SYS = ("You are given a section of a software project's notes. Write 3 short, DISTINCT questions a "
+           "user might ask that this section answers — phrased in plain everyday vocabulary, NOT the "
+           "section's own jargon (use lay synonyms for technical terms). One per line, no numbering.")
+    out, made = [], 0
+    for et in etexts:
+        h = hashlib.sha256(et.encode()).hexdigest()
+        if h not in cache:
+            data = json.dumps({"model": model, "temperature": 0.4, "messages": [
+                {"role": "system", "content": SYS}, {"role": "user", "content": et[:4000]}]}).encode()
+            req = urllib.request.Request("https://api.openai.com/v1/chat/completions", data=data,
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+            cache[h] = json.load(urllib.request.urlopen(req, timeout=60))["choices"][0]["message"]["content"].strip()
+            made += 1
+            if made % 25 == 0:
+                json.dump(cache, open(cache_path, "w"))
+        out.append(et + "\n\n" + cache[h])
+    json.dump(cache, open(cache_path, "w"))
+    return out, made
+
 
 # Bump on EVERY change to SCHEMA below. Stamped into the DB (PRAGMA user_version) at seed; the server
 # reseeds when a DB's stamp != this, so a schema-changing plugin update self-heals instead of erroring
@@ -313,8 +358,14 @@ def main():
     def _etext(head_, text_, title_):
         return f"{title_}\n{head_}\n{text_}" if head_ else f"{title_}\n{text_}"
     embedded = 0
-    vecs = embed.embed([_etext(h, t, ti) for _, _, h, t, ti in chunks]) \
-        if (cfg.get("embed") and embed.available()) else None
+    do_embed = bool(cfg.get("embed") and embed.available())
+    etexts = [_etext(h, t, ti) for _, _, h, t, ti in chunks]
+    d2q_made = 0
+    if do_embed and cfg.get("doc2query"):
+        # index-side expansion: augment the EMBEDDING text only (served text untouched). Cache beside the DB.
+        d2q_cache = os.path.join(os.path.dirname(os.path.abspath(db)) or ".", f".{name}.d2q.json")
+        etexts, d2q_made = doc2query_aug(etexts, d2q_cache)
+    vecs = embed.embed(etexts) if do_embed else None
     for i, (s, ordn, h, t, _ti) in enumerate(chunks):
         vec = json.dumps(vecs[i]) if vecs else None
         con.execute("INSERT INTO chunk(slug,ord,heading,text,vector) VALUES(?,?,?,?,?)",
@@ -325,7 +376,8 @@ def main():
     con.close()
     print(f"seeded {db}  ·  {len(files)} facts · {len(chunks)} chunks from {facts_dir}")
     if embedded:
-        print(f"  retriever: EMBEDDING — {embedded} chunk vectors (text-embedding-3-small)")
+        print(f"  retriever: EMBEDDING — {embedded} chunk vectors (text-embedding-3-small)"
+              + (f" · doc2query ON ({d2q_made} chunks expanded this run, rest cached)" if cfg.get("doc2query") else ""))
     elif cfg.get("embed"):
         print("  retriever: keyword (embed:true but no OPENAI_API_KEY found — fell back)")
     else:
