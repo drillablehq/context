@@ -1,0 +1,122 @@
+[
+ {
+  "slug": "ch06-01-defining-an-enum",
+  "title": "ch06-01-defining-an-enum",
+  "jargon": "How do I define an enum in Rust to represent different types of IP addresses?",
+  "lay": "How can I create a list of options for different kinds of IP addresses in my code?"
+ },
+ {
+  "slug": "ch07-00-managing-growing-projects-with-packages-crates-and-modules",
+  "title": "Packages, Crates, and Modules",
+  "jargon": "How do I organize my code into multiple modules and crates as my project grows?",
+  "lay": "What should I do to keep my code organized when my project gets bigger?"
+ },
+ {
+  "slug": "ch07-03-paths-for-referring-to-an-item-in-the-module-tree",
+  "title": "ch07-03-paths-for-referring-to-an-item-in-the-module-tree",
+  "jargon": "What are the differences between absolute and relative paths when referring to items in a module tree?",
+  "lay": "How do I find and use functions in my code based on where they are located?"
+ },
+ {
+  "slug": "ch12-02-reading-a-file",
+  "title": "ch12-02-reading-a-file",
+  "jargon": "How do I use fs::read_to_string to read the contents of a file in Rust?",
+  "lay": "What\u2019s the best way to get text from a document in my Rust program?"
+ },
+ {
+  "slug": "ch12-05-working-with-environment-variables",
+  "title": "ch12-05-working-with-environment-variables",
+  "jargon": "How can I implement case-insensitive searching in my minigrep application using an environment variable?",
+  "lay": "How can I make my searches not worry about uppercase or lowercase letters in my minigrep program?"
+ },
+ {
+  "slug": "ch13-04-performance",
+  "title": "ch13-04-performance",
+  "jargon": "What are the performance differences between using a for loop and using iterators in the search function?",
+  "lay": "Is it faster to use a regular loop or a different way to go through the text when searching for a word?"
+ },
+ {
+  "slug": "ch16-01-threads",
+  "title": "ch16-01-threads",
+  "jargon": "How do I create a new thread in Rust using the `thread::spawn` function?",
+  "lay": "How can I start a new part of my program to run at the same time as the main part?"
+ },
+ {
+  "slug": "ch03-04-comments",
+  "title": "ch03-04-comments",
+  "jargon": "What is the idiomatic style for writing comments in Rust code?",
+  "lay": "How do I write notes in my code that other people can read?"
+ },
+ {
+  "slug": "ch05-03-method-syntax",
+  "title": "ch05-03-method-syntax",
+  "jargon": "How do I define a method within an impl block for a struct in Rust?",
+  "lay": "How can I create a new action that belongs to a shape I've made in my code?"
+ },
+ {
+  "slug": "ch06-00-enums",
+  "title": "Enums and Pattern Matching",
+  "jargon": "How do I use the `Option` enum to represent a value that can be either present or absent in my code?",
+  "lay": "How can I show that something might not have a value in my program?"
+ },
+ {
+  "slug": "ch07-04-bringing-paths-into-scope-with-the-use-keyword",
+  "title": "ch07-04-bringing-paths-into-scope-with-the-use-keyword",
+  "jargon": "How can I simplify calling functions from nested modules using the `use` keyword?",
+  "lay": "How can I make it easier to call functions from different parts of my code without typing everything out each time?"
+ },
+ {
+  "slug": "ch08-01-vectors",
+  "title": "ch08-01-vectors",
+  "jargon": "How do I create a new vector in Rust and specify its type?",
+  "lay": "How can I make a new list to hold numbers in my program?"
+ },
+ {
+  "slug": "ch09-01-unrecoverable-errors-with-panic",
+  "title": "ch09-01-unrecoverable-errors-with-panic",
+  "jargon": "How can I configure my project to abort on panic instead of unwinding the stack?",
+  "lay": "How do I make my program stop immediately when it runs into a serious problem instead of trying to clean up first?"
+ },
+ {
+  "slug": "ch12-01-accepting-command-line-arguments",
+  "title": "ch12-01-accepting-command-line-arguments",
+  "jargon": "How can I use std::env::args to collect command line arguments in my minigrep project?",
+  "lay": "How do I get my minigrep program to read the words and file name I type when I run it?"
+ },
+ {
+  "slug": "ch13-02-iterators",
+  "title": "ch13-02-iterators",
+  "jargon": "How can I implement the `next` method for my custom iterator using the `Iterator` trait?",
+  "lay": "What do I need to do to make my own way to go through a list of things in my code?"
+ },
+ {
+  "slug": "ch14-00-more-about-cargo",
+  "title": "More About Cargo and Crates.io",
+  "jargon": "How can I use release profiles to customize my build process in Cargo?",
+  "lay": "How can I change how my project is built for different situations?"
+ },
+ {
+  "slug": "ch14-01-release-profiles",
+  "title": "ch14-01-release-profiles",
+  "jargon": "How can I customize the `opt-level` setting for the `dev` profile in my project?",
+  "lay": "How do I change the settings for how my code is compiled during development?"
+ },
+ {
+  "slug": "ch14-03-cargo-workspaces",
+  "title": "ch14-03-cargo-workspaces",
+  "jargon": "How do I create a workspace in Cargo that includes multiple library crates and a binary crate?",
+  "lay": "How can I set up a project that has several parts working together, including a main program and some helper libraries?"
+ },
+ {
+  "slug": "ch14-04-installing-binaries",
+  "title": "ch14-04-installing-binaries",
+  "jargon": "How do I use the `cargo install` command to add a binary crate to my local environment?",
+  "lay": "How can I get a tool from crates.io to work on my computer?"
+ },
+ {
+  "slug": "ch15-00-smart-pointers",
+  "title": "Smart Pointers",
+  "jargon": "What are the key differences between references and smart pointers in Rust?",
+  "lay": "What\u2019s the difference between regular ways to access data and these special types that can do more?"
+ }
+]

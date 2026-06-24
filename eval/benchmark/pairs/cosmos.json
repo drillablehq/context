@@ -1,0 +1,122 @@
+[
+ {
+  "slug": "adr-013-metrics",
+  "title": "ADR 013: Observability",
+  "jargon": "How do I configure telemetry settings in the app.toml file to enable metrics collection?",
+  "lay": "How can I set up tracking to see how my program is performing?"
+ },
+ {
+  "slug": "adr-022-custom-panic-handling",
+  "title": "ADR 022: Custom BaseApp panic handling",
+  "jargon": "How can I implement a custom RecoveryHandler to manage specific errors during the panic recovery process in BaseApp?",
+  "lay": "How do I set up a way to handle errors when something goes wrong in my app?"
+ },
+ {
+  "slug": "adr-024-coin-metadata",
+  "title": "ADR 024: Coin Metadata",
+  "jargon": "How does the `x/bank` module handle metadata for different denominations in the Cosmos SDK?",
+  "lay": "How does the system keep track of different types of money and their names?"
+ },
+ {
+  "slug": "adr-057-app-wiring",
+  "title": "ADR 057: App Wiring",
+  "jargon": "What are the key features of the new dependency injection system introduced in the app wiring paradigm?",
+  "lay": "What new tools are available to help build and connect different parts of the software more easily?"
+ },
+ {
+  "slug": "PROCESS",
+  "title": "ADR Creation Process",
+  "jargon": "What steps should I follow to initiate the ADR creation process?",
+  "lay": "How do I start writing a new document to explain a decision we've made?"
+ },
+ {
+  "slug": "README",
+  "title": "Architecture Decision Records (ADR)",
+  "jargon": "What is the purpose of an Architectural Decision Record (ADR) in the Cosmos-SDK, and how does it differ from a specification?",
+  "lay": "What is an ADR and why is it important for keeping track of decisions made in the software project?"
+ },
+ {
+  "slug": "adr-003-dynamic-capability-store",
+  "title": "ADR 3: Dynamic Capability Store",
+  "jargon": "How does the `CapabilityKeeper` manage the creation and tracking of capability keys during transaction execution in the Cosmos SDK?",
+  "lay": "How does the system keep track of permissions for different parts of the application while it's running?"
+ },
+ {
+  "slug": "adr-006-secret-store-replacement",
+  "title": "ADR 006: Secret Store Replacement",
+  "jargon": "What are the security improvements provided by the new Keyring backend compared to the previous Keybase backend?",
+  "lay": "How will the new way of storing my information keep it safer than before?"
+ },
+ {
+  "slug": "adr-010-modular-antehandler",
+  "title": "ADR 010: Modular AnteHandler",
+  "jargon": "How can I implement a custom AnteHandler using the ModuleManager to ensure my custom logic is executed in a specific order?",
+  "lay": "How can I set up my own rules for processing transactions while making sure they run in the order I want?"
+ },
+ {
+  "slug": "adr-017-historical-header-module",
+  "title": "ADR 17: Historical Header Module",
+  "jargon": "How does the Historical Header Module store and retrieve recent headers in the Cosmos SDK?",
+  "lay": "How does the system keep track of the latest blocks and make them available for use?"
+ },
+ {
+  "slug": "adr-027-deterministic-protobuf-serialization",
+  "title": "ADR 027: Deterministic Protobuf Serialization",
+  "jargon": "What are the serialization rules for protobuf3 to ensure deterministic output for SignDoc?",
+  "lay": "How can I make sure that the way I save my data is the same no matter what programming language I use?"
+ },
+ {
+  "slug": "adr-029-fee-grant-module",
+  "title": "ADR 029: Fee Grant Module",
+  "jargon": "What are the different types of fee allowances available in the x/feegrant module, and how do they work?",
+  "lay": "What kinds of permissions can I give to someone else to pay for my transaction fees, and how do they function?"
+ },
+ {
+  "slug": "adr-030-authz-module",
+  "title": "ADR 030: Authorization Module",
+  "jargon": "How can I use the `authz` module to grant specific permissions to another account for executing messages?",
+  "lay": "How do I let someone else use my account to do certain things, like send money or vote?"
+ },
+ {
+  "slug": "adr-041-in-place-store-migrations",
+  "title": "ADR 041: In-Place Store Migrations",
+  "jargon": "How do I register migration functions for my module when performing in-place store migrations?",
+  "lay": "How can I set up the steps to update my software without having to export and import a big JSON file?"
+ },
+ {
+  "slug": "adr-045-check-delivertx-middlewares",
+  "title": "ADR 045: BaseApp `{Check,Deliver}Tx` as Middlewares",
+  "jargon": "How can I implement a custom middleware for the BaseApp's transaction handling using the new middleware design?",
+  "lay": "How do I create my own piece of code that can work with transactions in this software?"
+ },
+ {
+  "slug": "adr-049-state-sync-hooks",
+  "title": "ADR 049: State Sync Hooks",
+  "jargon": "How can I implement a new ExtensionSnapshotter to include additional state in the state sync process?",
+  "lay": "What do I need to do to add extra data to the snapshots when syncing my application?"
+ },
+ {
+  "slug": "adr-050-sign-mode-textual-annex2",
+  "title": "ADR 050: SIGN_MODE_TEXTUAL: Annex 2 XXX",
+  "jargon": "What are the guidelines for rendering a SIGN_MODE_TEXTUAL document on a hardware security device?",
+  "lay": "How should a device show a signed document so that it's easy to read?"
+ },
+ {
+  "slug": "adr-053-go-module-refactoring",
+  "title": "ADR 053: Go Module Refactoring",
+  "jargon": "What are the guidelines for creating new go modules from the existing SDK?",
+  "lay": "How do I break down the current SDK into smaller parts?"
+ },
+ {
+  "slug": "adr-058-auto-generated-cli",
+  "title": "ADR 058: Auto-Generated CLI",
+  "jargon": "How can I leverage the new infrastructure in `client/v2` to automatically generate CLI commands for my Cosmos SDK module based on protobuf definitions?",
+  "lay": "How can I use the new tools to create command line instructions for my software without having to write them by hand?"
+ },
+ {
+  "slug": "adr-061-liquid-staking",
+  "title": "ADR-061: Liquid Staking",
+  "jargon": "How does the exemption factor impact the issuance of tokenized shares in the liquid staking system?",
+  "lay": "What does the exemption factor do for the way I can use my staked tokens?"
+ }
+]
