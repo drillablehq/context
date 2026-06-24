@@ -1,0 +1,122 @@
+[
+ {
+  "slug": "debugging",
+  "title": "Debugging { #debugging }",
+  "jargon": "How do I run my FastAPI application with uvicorn while using a debugger in my editor?",
+  "lay": "How can I start my app and check for problems using the tools in my programming environment?"
+ },
+ {
+  "slug": "exceptions",
+  "title": "Exceptions - `HTTPException` and `WebSocketException`",
+  "jargon": "How can I raise an HTTPException or WebSocketException in my FastAPI application to handle errors?",
+  "lay": "What should I do if I want to show an error message to the user when something goes wrong in my app?"
+ },
+ {
+  "slug": "extra-models",
+  "title": "Extra Models { #extra-models }",
+  "jargon": "How can I create multiple related models for user data, including input, output, and database models with different password handling?",
+  "lay": "How do I set up different types of user information for signing up, logging in, and storing safely?"
+ },
+ {
+  "slug": "https",
+  "title": "About HTTPS { #about-https }",
+  "jargon": "What are the requirements for setting up HTTPS on a server, including the need for certificates and the role of SNI?",
+  "lay": "What do I need to do to make my website secure, and why do I need special files for that?"
+ },
+ {
+  "slug": "metadata",
+  "title": "Metadata and Docs URLs { #metadata-and-docs-urls }",
+  "jargon": "How can I customize the metadata fields for my FastAPI application, such as title, summary, and contact information?",
+  "lay": "How do I change the basic information about my API, like its name and who to contact for help?"
+ },
+ {
+  "slug": "path-operation-advanced-configuration",
+  "title": "Path Operation Advanced Configuration { #path-operation-advanced-configuration }",
+  "jargon": "How can I set a unique operationId for my path operations in OpenAPI using FastAPI?",
+  "lay": "How do I make sure each of my API functions has a different name for the documentation?"
+ },
+ {
+  "slug": "query-params-str-validations",
+  "title": "Query Parameters and String Validations { #query-parameters-and-string-validations }",
+  "jargon": "How can I use Annotated with Query to enforce a maximum length for a query parameter in FastAPI?",
+  "lay": "How do I set a limit on how long a search term can be in my web application?"
+ },
+ {
+  "slug": "request-forms-and-files",
+  "title": "Request Forms and Files { #request-forms-and-files }",
+  "jargon": "How do I use `File` and `Form` to handle both file uploads and form fields in my application?",
+  "lay": "How can I send both a document and some information at the same time when using this software?"
+ },
+ {
+  "slug": "security-index-2",
+  "title": "Security Tools",
+  "jargon": "How do I declare dependencies with OAuth2 scopes using Security() in FastAPI?",
+  "lay": "How can I set up the rules for what users can do in my app?"
+ },
+ {
+  "slug": "additional-responses",
+  "title": "Additional Responses in OpenAPI { #additional-responses-in-openapi }",
+  "jargon": "How can I declare additional responses in my FastAPI application using the `responses` parameter in path operation decorators?",
+  "lay": "How do I add different types of answers my API can give, like errors or other formats?"
+ },
+ {
+  "slug": "advanced-dependencies",
+  "title": "Advanced Dependencies { #advanced-dependencies }",
+  "jargon": "How can I create a parameterized dependency in FastAPI that checks for specific query parameters using a callable instance?",
+  "lay": "How do I make a dependency in my app that can check for different values in a query without writing a lot of separate functions?"
+ },
+ {
+  "slug": "advanced-index",
+  "title": "Advanced User Guide { #advanced-user-guide }",
+  "jargon": "What are the options and configurations available beyond the main features in FastAPI?",
+  "lay": "What other ways can I use this software besides what I learned in the main instructions?"
+ },
+ {
+  "slug": "advanced-python-types",
+  "title": "Advanced Python Types { #advanced-python-types }",
+  "jargon": "How do I use Union from typing instead of Optional for type annotations?",
+  "lay": "What should I use to show that a value can be a string or nothing when writing my code?"
+ },
+ {
+  "slug": "apirouter",
+  "title": "`APIRouter` class",
+  "jargon": "What methods are available in the APIRouter for handling different types of HTTP requests?",
+  "lay": "What can I use to manage different kinds of web requests in my project?"
+ },
+ {
+  "slug": "body",
+  "title": "Request Body { #request-body }",
+  "jargon": "How do I declare a request body using Pydantic models in my API?",
+  "lay": "How can I set up the data I want to send to my API?"
+ },
+ {
+  "slug": "body-multiple-params",
+  "title": "Body - Multiple Parameters { #body-multiple-parameters }",
+  "jargon": "How can I mix Path, Query, and body parameters in my FastAPI application?",
+  "lay": "How do I combine different types of information in a request when using this software?"
+ },
+ {
+  "slug": "body-updates",
+  "title": "Body - Updates { #body-updates }",
+  "jargon": "How can I use the HTTP `PUT` method to replace an existing item in my database, and what should I be aware of regarding default values?",
+  "lay": "How do I change an item in my database using a `PUT` request, and what do I need to know about missing information?"
+ },
+ {
+  "slug": "conditional-openapi",
+  "title": "Conditional OpenAPI { #conditional-openapi }",
+  "jargon": "How can I conditionally disable the OpenAPI documentation in my application based on environment variables?",
+  "lay": "How do I turn off the API documentation for my app when I'm in production?"
+ },
+ {
+  "slug": "cookie-params",
+  "title": "Cookie Parameters { #cookie-parameters }",
+  "jargon": "How do I declare `Cookie` parameters in my FastAPI application?",
+  "lay": "What steps do I need to follow to set up cookies in my FastAPI project?"
+ },
+ {
+  "slug": "dependencies",
+  "title": "Dependencies - `Depends()` and `Security()`",
+  "jargon": "How do I use the `Depends()` function in FastAPI to manage dependencies in my application?",
+  "lay": "How can I use a special function in FastAPI to help with parts of my app that need to work together?"
+ }
+]

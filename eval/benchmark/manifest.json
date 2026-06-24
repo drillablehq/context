@@ -1,0 +1,29 @@
+{
+  "description": "Cross-project retrieval-quality benchmark for drillable-context. Public, SHA-pinned corpora so anyone can reproduce. Measures recall of the right doc for a question, split by JARGON vs LAY (everyday-words) phrasing — the lay column is the vocab-foreign case.",
+  "corpora": [
+    {
+      "name": "fastapi",
+      "represents": "prose documentation (the classic /docs folder)",
+      "repo": "https://github.com/tiangolo/fastapi",
+      "sha": "3f28dbe6d84cdac19bdb2b41e1664981e37359ab",
+      "subdir": "docs/en/docs",
+      "license": "MIT"
+    },
+    {
+      "name": "rustbook",
+      "represents": "dense, sectioned technical chapters",
+      "repo": "https://github.com/rust-lang/book",
+      "sha": "05d114287b7d6f6c9253d5242540f00fbd6172ab",
+      "subdir": "src",
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "cosmos",
+      "represents": "architecture decision records (ADRs)",
+      "repo": "https://github.com/cosmos/cosmos-sdk",
+      "sha": "24fb5ffc033a1a671ab0a60e636532968c24f09f",
+      "subdir": "docs/architecture",
+      "license": "Apache-2.0"
+    }
+  ]
+}
