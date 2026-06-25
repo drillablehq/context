@@ -19,6 +19,11 @@ config.json:
     "track_drift":    false,                    # OPTIONAL: flag a cited fact whose source changed after
                                                 #   it (re-verify). Off by default — noisy in a co-evolving
                                                 #   monorepo; signal when oracle_repo is a SEPARATE code repo
+    "auto_refresh":   "origin/main",            # OPTIONAL: keep a CLEAN dedicated worktree pinned to this
+                                                #   ref — on query, a throttled fetch + (only if the tree has
+                                                #   no local edits) checkout + reseed. Replaces the manual
+                                                #   refresh cron for the pinned-worktree setup; a DIRTY tree
+                                                #   is never touched (surface-only). null/absent → off
     "doc2query":      <follows embed>          # index-side expansion (docTTTTTquery): append LLM-predicted
                                                 #   lay-questions to each chunk's EMBEDDING text only (never
                                                 #   the served text) — lifts recall on a lay-worded query the
