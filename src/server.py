@@ -16,6 +16,7 @@ import re
 import sqlite3
 import subprocess
 import sys
+import time
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -63,14 +64,65 @@ def _db_schema_version(db):
         return None
 
 
+AUTO_FETCH_THROTTLE = int(os.environ.get("DRILLABLE_AUTO_FETCH_THROTTLE", "600"))  # min seconds between auto-fetches
+
+
+def _auto_advance(cfg):
+    """If cfg['auto_refresh'] names a ref (e.g. 'origin/main'), keep a CLEAN dedicated worktree pinned to
+    it: a throttled fetch, and ONLY when the working tree is clean, fast-forward (detach) to the ref and
+    signal a reseed. Returns True iff it advanced (the caller then reseeds).
+
+    This is the freshness mechanism the pinned-worktree topology actually needs: `_facts_behind`'s warning
+    keys on `@{upstream}`, which a DETACHED worktree (the recommended setup) doesn't have — so the warning
+    never fires there. Safe-by-default: a DIRTY tree, a missing ref, no git, or any error → returns False
+    and nothing is touched (the clobber guard — never auto-advance a tree with local edits is the whole
+    safety argument; that case keeps the surface-only behaviour). Throttled so the query hot path fetches
+    at most once per AUTO_FETCH_THROTTLE seconds."""
+    ref = cfg.get("auto_refresh")
+    if not ref or not isinstance(ref, str):
+        return False
+    fd = cfg["facts_dir"]
+    marker = cfg["_db"] + ".autofetch"
+    try:
+        if os.path.exists(marker) and (time.time() - os.path.getmtime(marker)) < AUTO_FETCH_THROTTLE:
+            return False
+    except Exception:
+        pass
+    try:                                   # throttle regardless of outcome (touch BEFORE the network call)
+        open(marker, "a").close()
+        os.utime(marker, None)
+    except Exception:
+        pass
+    try:
+        def git(*a, t=8):
+            return subprocess.run(["git", "-C", fd, *a], capture_output=True, text=True, timeout=t)
+        # SAFETY: never advance a tree with local edits — the only case a checkout could clobber work.
+        st = git("status", "--porcelain", t=5)
+        if st.returncode != 0 or st.stdout.strip():
+            return False                   # not a git repo, or dirty → surface-only
+        remote = ref.split("/", 1)[0]
+        branch = ref.split("/", 1)[1] if "/" in ref else "HEAD"
+        if git("fetch", "--quiet", remote, branch, t=25).returncode != 0:
+            return False
+        head = git("rev-parse", "HEAD", t=5).stdout.strip()
+        tgt = git("rev-parse", ref, t=5).stdout.strip()
+        if not tgt or head == tgt:
+            return False                   # already current
+        return git("checkout", "--quiet", "--detach", ref, t=15).returncode == 0
+    except Exception:
+        return False
+
+
 def con(cfg):
     db = cfg["_db"]
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import seed
-    # (Re)seed when: the DB is absent, a fact changed since it was built (freshness), OR the DB's stamped
-    # schema version != the code's — so a plugin update that changes SCHEMA self-heals on the next query
-    # instead of erroring against a stale-shape DB. seed.main() rebuilds in place (.md stay the truth).
-    needs = (not os.path.exists(db)
+    # (Re)seed when: an opt-in auto_refresh just advanced a clean worktree to its pinned ref, the DB is
+    # absent, a fact changed since it was built (freshness), OR the DB's stamped schema version != the
+    # code's — so a plugin update that changes SCHEMA self-heals on the next query instead of erroring
+    # against a stale-shape DB. seed.main() rebuilds in place (.md stay the truth).
+    needs = (_auto_advance(cfg)
+             or not os.path.exists(db)
              or facts_mtime(cfg) > os.path.getmtime(db)
              or _db_schema_version(db) != seed.SCHEMA_VERSION)
     if needs:
@@ -269,6 +321,8 @@ def v_stats(cfg):
     sv = ", ".join(f"{r[0]} {r[1]}" for r in c.execute("SELECT serving,COUNT(*) FROM memory GROUP BY serving"))
     gr = ", ".join(f"{r[0]} {r[1]}" for r in c.execute("SELECT grounding,COUNT(*) FROM memory GROUP BY grounding"))
     out = f"{cfg['name']} — {tot} facts\n  serving: {sv}\n  grounding: {gr}\n  retriever: {_retriever(cfg)[1]}"
+    if cfg.get("auto_refresh"):
+        out += f"\n  auto-refresh: {cfg['auto_refresh']} (advances a clean worktree on query; throttled)"
     behind = _facts_behind(cfg["facts_dir"])
     if behind:
         n, up = behind

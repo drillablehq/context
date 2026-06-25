@@ -134,11 +134,19 @@ or a **dedicated detached worktree** kept on the reviewed record:
 git -C /path/to/repo worktree add --detach ~/sources/myproject origin/main
 ```
 
-Set `facts_dir`/`oracle_repo` to `~/sources/myproject`, then re-pin + reseed after each merge. As a
-safety net, `stats` warns **"⚠ facts checkout is N commit(s) behind `<upstream>` — may be serving stale
-facts; pull to refresh"** when the indexed checkout has fallen behind its remote (it *surfaces*, never
-auto-pulls — a pull can clobber local work). A ready-made refresh script (fetch → re-pin to `origin/main`
-→ reseed) is in [`examples/refresh.sh`](examples/refresh.sh).
+Set `facts_dir`/`oracle_repo` to `~/sources/myproject`, then keep it current one of two ways:
+
+- **Automatic (recommended for a dedicated worktree).** Set `"auto_refresh": "origin/main"` in the
+  config. On query, the server does a *throttled* fetch and — **only if the worktree is clean** (no local
+  edits to clobber) — advances it to the ref and reseeds. No cron, no manual step; a clean pinned worktree
+  stays fresh on its own. A **dirty** tree is never touched (it falls back to the warning below), so this
+  is safe precisely *because* the recommended source is a checkout you don't develop in.
+- **Manual.** Re-pin + reseed after each merge with [`examples/refresh.sh`](examples/refresh.sh) (fetch →
+  re-pin to `origin/main` → reseed), or on a schedule.
+
+As a fallback for a checkout you *do* develop in (one on a branch, not `auto_refresh`-managed), `stats`
+warns **"⚠ facts checkout is N commit(s) behind `<upstream>` — may be serving stale facts; pull to
+refresh"** — it *surfaces*, never auto-pulls (a pull can clobber local work).
 
 ## Frontmatter conventions
 
