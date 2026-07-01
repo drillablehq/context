@@ -43,7 +43,7 @@ claude mcp add drillable-context -- python3 /abs/path/src/server.py --facts-dir 
 
 Add `-s user` for all projects; `-e DRILLABLE_EMBED=true` for semantic retrieval (uses your
 `OPENAI_API_KEY`). Restart and your agent gets `context_search` / `context_get` / `context_standing` /
-`context_stats`; the index builds itself on the first call, and the running server rebuilds it when you
+`context_enumerate` / `context_stats`; the index builds itself on the first call, and the running server rebuilds it when you
 edit or add a fact — the next query reflects the change (no restart, no manual reseed).
 
 **Companion — ground *reference* facts too.** For cited reference domains (the MCP spec, units,
@@ -85,7 +85,7 @@ serve it over MCP. To drive it from a config file (and customize the split / ora
    ```
    claude mcp add myproject -- python3 /abs/path/src/server.py --config /abs/path/configs/myproject.json
    ```
-   Your agent gets `myproject_search`, `myproject_get`, `myproject_standing`, `myproject_stats`.
+   Your agent gets `myproject_search`, `myproject_get`, `myproject_standing`, `myproject_enumerate`, `myproject_stats`.
 
 ## The split — what's always-on vs fetched
 

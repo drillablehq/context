@@ -13,7 +13,8 @@ description: >-
 # Ground in the project's own facts, don't assume
 
 This project's specific facts — its conventions, decisions, config, and gotchas — live in a grounded
-corpus your agent can call (`context_search` / `context_get` / `context_standing`). When you're about
+corpus your agent can call (`context_search` / `context_get` / `context_standing` /
+`context_enumerate`). When you're about
 to assert something *about this codebase* that your priors would fill in, drill it instead:
 
 - **A project-specific claim** ("we use X", "the build command is Y", "module Z returns W") →
@@ -22,6 +23,9 @@ to assert something *about this codebase* that your priors would fill in, drill 
   that is exactly the confident-wrong failure this prevents.
 - **A standing instruction** (a preference that should hold every turn) is surfaced by
   `context_standing` — honor it.
+- **Not sure what's on record?** `context_enumerate` lists the corpus by category (findings,
+  decisions, conventions, …) with exact counts — the "what does this project even document" map,
+  before you search. It lists and cites; it never computes an answer.
 - **An abstention is honest.** "No record" means the project hasn't documented it — surface that and
   ask, don't fabricate a plausible answer.
 - **The boundary — name it or drill it.** If the fact lives in one place you can *point to*, open that
