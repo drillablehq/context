@@ -529,9 +529,15 @@ def setup_sessions(argv):
     ap = argparse.ArgumentParser(prog="drillable-context sessions",
                                  description="index your Claude Code session history for grounded drilling")
     ap.add_argument("--projects-dir", default=SESSIONS_SOURCE, help="~/.claude/projects (default)")
+    ap.add_argument("--days", type=int, help="index only the last N days (a fast first index on a "
+                    "rate-limited key; the rest fill in automatically as you use them)")
     ap.add_argument("--rebuild", action="store_true", help="re-convert every session (ignore the incremental skip)")
     a = ap.parse_args(argv)
 
+    since = None
+    if a.days:
+        import datetime
+        since = (datetime.date.today() - datetime.timedelta(days=a.days)).isoformat()
     os.makedirs(SESSIONS_FACTS, exist_ok=True)
     cfg = {"name": "sessions", "adapter": "sessions", "facts_dir": SESSIONS_FACTS,
            "source": os.path.expanduser(a.projects_dir), "oracle_repo": None, "standing_types": [],
@@ -539,8 +545,9 @@ def setup_sessions(argv):
     with open(SESSIONS_CFG, "w", encoding="utf-8") as fh:
         json.dump(cfg, fh, indent=2)
 
-    print(f"drillable-context sessions — indexing {a.projects_dir}", file=sys.stderr)
-    r = _import_sessions().convert(SESSIONS_FACTS, a.projects_dir, rebuild=a.rebuild)
+    win = f" (last {a.days} days)" if a.days else ""
+    print(f"drillable-context sessions — indexing {a.projects_dir}{win}", file=sys.stderr)
+    r = _import_sessions().convert(SESSIONS_FACTS, a.projects_dir, since=since, rebuild=a.rebuild)
     if r.get("error"):
         sys.exit(r["error"])
     print(f"  {r['fresh']} new/updated · {r['written']} sessions total", file=sys.stderr)
