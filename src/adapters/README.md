@@ -29,7 +29,11 @@ else keyword), and prints the `claude mcp add drillable-sessions …` line. Then
 throttled, incremental auto-convert on query keeps the index current (`_auto_convert`). Re-run the command only
 to force a full `--rebuild`.
 
-Overrides (rarely needed): `--projects-dir`, `DRILLABLE_HOME` (managed dir), `DRILLABLE_SESSIONS_SOURCE`.
+First index is memory-light (peak ~430 MB over 600 sessions) but network-bound: it embeds every turn, so on
+a **rate-limited key** the first run can take a few minutes — `embed._post` retries 429s with backoff so it
+*completes* rather than dying; `--days N` indexes only recent history for a fast start (the rest fill in
+automatically as you use them). Overrides (rarely needed): `--projects-dir`, `--days`, `DRILLABLE_HOME`
+(managed dir), `DRILLABLE_SESSIONS_SOURCE`.
 
 *(Low-level: the converter `src/adapters/sessions.py` and `configs/config.example.json` still work standalone
 if you want a bespoke corpus.)*
