@@ -28,6 +28,18 @@ STOP = set("the a an of to in is are for and or it its on at as be by we you i w
 MARK = {"cited": "⛓ cited", "provenance": "◷ provenance", "judgment": "· judgment"}
 
 
+def _pkg_version(default="0"):
+    """package.json version — the single source of truth, so serverInfo can't drift from the release."""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "package.json")) as f:
+            return json.load(f).get("version", default)
+    except Exception:  # noqa: BLE001 — version display is best-effort; never fail the server over it
+        return default
+
+
+VERSION = _pkg_version()
+
+
 def load_cfg(argv):
     return config.resolve(argv)
 
@@ -414,7 +426,7 @@ def handle(req, cfg, tools):
         ver = (req.get("params") or {}).get("protocolVersion") or "2024-11-05"
         return {"jsonrpc": "2.0", "id": rid, "result": {
             "protocolVersion": ver, "capabilities": {"tools": {}},
-            "serverInfo": {"name": f"{cfg['name']}-context", "version": "0.1.0"}}}
+            "serverInfo": {"name": f"{cfg['name']}-context", "version": VERSION}}}
     if m == "notifications/initialized":
         return None
     if m == "tools/list":
