@@ -28,6 +28,18 @@ STOP = set("the a an of to in is are for and or it its on at as be by we you i w
 MARK = {"cited": "⛓ cited", "provenance": "◷ provenance", "judgment": "· judgment"}
 
 
+def _pkg_version(default="0"):
+    """package.json version — the single source of truth, so serverInfo can't drift from the release."""
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "package.json")) as f:
+            return json.load(f).get("version", default)
+    except Exception:  # noqa: BLE001 — version display is best-effort; never fail the server over it
+        return default
+
+
+VERSION = _pkg_version()
+
+
 def load_cfg(argv):
     return config.resolve(argv)
 
@@ -331,10 +343,66 @@ def v_stats(cfg):
     return out
 
 
+ENUM_AXES = ("collection", "grounding", "type", "serving")   # honest facets to slice the corpus by
+ENUM_CAP = 60   # members rendered when listing one category; the COUNT stays exact (the completeness bit)
+
+
+def _collection(source_file):
+    """Top path segment of a fact's source (findings / decisions / …) — the natural 'what kind' axis;
+    '(root)' for a top-level file."""
+    p = (source_file or "").replace("\\", "/").lstrip("./")
+    return p.split("/", 1)[0] if "/" in p else "(root)"
+
+
+def v_enumerate(cfg, by="collection", kind=""):
+    """The enumerate SHAPE — the complete set sliced by a facet, with an explicit completeness bit.
+    No `kind`: the directory (each facet value + its exact count — the 'what does this corpus hold' view
+    search can't give). With `kind`: that category's members (slug — title, capped; the count stays
+    exact). Retrieval-grade — it lists and cites; it never re-derives an answer (no oracle behind a doc)."""
+    by = (by or "collection").strip().lower()
+    if by not in ENUM_AXES:
+        return f'enumerate: unknown axis "{by}" — use one of: {", ".join(ENUM_AXES)}.'
+    rows = con(cfg).execute(
+        "SELECT slug, title, type, grounding, serving, source_file FROM memory ORDER BY slug").fetchall()
+    if not rows:
+        return f"{cfg['name']} — 0 facts."
+    val = (lambda r: _collection(r["source_file"])) if by == "collection" else (lambda r: r[by] or "—")
+    total = len(rows)
+    counts = {}
+    for r in rows:
+        k = val(r)
+        counts[k] = counts.get(k, 0) + 1
+    order = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    if not kind:                                     # the directory: exact counts over the WHOLE set → complete
+        lines = [f"{cfg['name']} — {total} facts, by {by}  [complete set]:"]
+        lines += [f"  {k} · {n}" for k, n in order]
+        lines.append(f'\ndrill a category: enumerate(by="{by}", kind="{order[0][0]}")')
+        return "\n".join(lines)
+    members = [r for r in rows if val(r) == kind]    # one category → its members (exact count, capped render)
+    n = len(members)
+    if not n:
+        return (f'{cfg["name"]} — no facts with {by}="{kind}". '
+                f'available: {", ".join(k for k, _ in order)}.')
+    shown = members[:ENUM_CAP]
+    tag = "[complete]" if len(shown) == n else f"[showing {len(shown)} of {n} — capped, not complete]"
+    lines = [f'{cfg["name"]} — {by}="{kind}": {n} facts  {tag}:']
+    for r in shown:
+        t = re.sub(r"\s+", " ", (r["title"] or "")).strip()
+        lines.append(f'  {r["slug"]} — {t[:80]}  [{MARK[r["grounding"]]}]')
+    return "\n".join(lines)
+
+
 def build_tools(cfg):
     n = cfg["name"]
     spec = [("search", "Search the fetch-on-demand facts (decisions, conventions, gotchas). Abstains on a miss.",
              {"query": {"type": "string"}}, ["query"], lambda a: v_search(cfg, **a)),
+            ("enumerate",
+             "The complete set by category (collection / grounding / type / serving) + a completeness bit — "
+             "the broad 'what does this corpus hold' view search can't give. Pass kind= to list one "
+             "category's members. Retrieval-grade: it lists and cites, never computes an answer.",
+             {"by": {"type": "string", "description": "facet: collection | grounding | type | serving (default collection)"},
+              "kind": {"type": "string", "description": "optional — list this category's members instead of the directory"}},
+             [], lambda a: v_enumerate(cfg, **a)),
             ("get", "One fact by slug — full body + grounding verdict (cited/provenance/judgment) + anchors.",
              {"slug": {"type": "string"}}, ["slug"], lambda a: v_get(cfg, **a)),
             ("standing", "The always-loaded standing instructions (preferences / who you are).",
@@ -358,7 +426,7 @@ def handle(req, cfg, tools):
         ver = (req.get("params") or {}).get("protocolVersion") or "2024-11-05"
         return {"jsonrpc": "2.0", "id": rid, "result": {
             "protocolVersion": ver, "capabilities": {"tools": {}},
-            "serverInfo": {"name": f"{cfg['name']}-context", "version": "0.1.0"}}}
+            "serverInfo": {"name": f"{cfg['name']}-context", "version": VERSION}}}
     if m == "notifications/initialized":
         return None
     if m == "tools/list":
