@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0
+
+Drill a repo's **GitHub PR history** — the second source adapter — closing half of the in-flight
+blindness gap (the sessions adapter sees session STARTS; this records what SHIPPED).
+
+- **`github.py` adapter** — `drillable-context github` converts a repo's merged/closed PRs (via the `gh`
+  CLI) into the engine's markdown: one file per PR, chunked as `## Summary` / `## Files touched`,
+  grounded as dated **provenance** (`originRef:` → the PR url). "When did we ship X", "was Y ever
+  tried", "what did #698 change" become drillable. One-command setup, incremental (a closed PR is a
+  settled record), and newly-closed PRs are picked up automatically on query — the same managed path as
+  sessions. `--repo owner/name` (repeatable) indexes any repos; default is the cwd's.
+- **History only, by design** — open-PR state is liveness; a snapshot of it is stale by construction, so
+  the adapter refuses to index it. Ask liveness live (`gh pr list --state open`); drill record here.
+- **Engine** — `originRef:` frontmatter now earns the provenance label alongside `originSessionId:`
+  (one line in seed.py); the on-query auto-convert generalizes to any adapter-backed corpus.
+
 ## 0.5.0
 
 Session history, now **painless** — one command to set up, zero to keep current — and robust at full scale.

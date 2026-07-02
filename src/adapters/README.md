@@ -63,6 +63,34 @@ install never contaminates one project's drills with another's. `search` takes `
 The `project` column comes from each fact's frontmatter (seed.py, schema v2); non-session corpora (no
 `project`) are unaffected — the filter only engages when the corpus carries projects.
 
+## `github.py` — drill a repo's pull-request history
+
+Converts a repo's **merged/closed** PRs (via the `gh` CLI — auth is gh's, not ours) into markdown: one
+`pr-<n>.md` per PR, chunked by section (`## Summary` — the PR body with its own headings demoted so chunk
+boundaries stay ours — and `## Files touched`), with frontmatter `type: github-pr` + `originRef: <PR url>`
+so the engine grounds each as **provenance** (a dated record of what shipped, cited to its PR). So "when
+did we ship X", "was Y ever tried", "what did #698 change" become drillable instead of hand-rolled `gh`
+archaeology.
+
+**Setup is one command:**
+
+```
+drillable-context github                      # index the cwd's repo (or --repo owner/name, repeatable)
+```
+
+It writes a managed config (`~/.drillable/github.json`), converts incrementally (a closed PR is a settled
+record — existing `pr-<n>.md` are skipped), seeds, and prints the `claude mcp add drillable-github …`
+line. Once wired, newly-closed PRs are picked up automatically (the same throttled on-query convert as
+sessions). `--limit N` caps PRs per repo (default 200, newest first); `--rebuild` re-converts everything.
+
+**History only, by design.** An OPEN PR is *liveness*, and a snapshot of liveness is stale by
+construction — indexing it would serve "X is open" minutes-to-hours after it merged. Ask liveness live
+(`gh pr list --state open`); drill history here. The two halves of "what's in flight" stay honest:
+the sessions adapter sees STARTS (turns), this one records SHIPS (merges) — and what's open *right now*
+is a live query, never an index.
+
 ### Not yet (follow-ups)
 
 - Incremental re-convert (only new sessions); a `bin/` entry; per-agent adapters beyond Claude Code.
+- A live open-PR lane (query-time, `asof`-stamped) if drilling liveness through the same grammar proves
+  worth it; issues/discussions as further GitHub record types.
