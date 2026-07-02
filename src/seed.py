@@ -330,7 +330,8 @@ def main():
         raw = open(path, encoding="utf-8").read()
         fm, body = split_frontmatter(raw)
         mtype = (fm_field(type_field, fm) or "").strip() or None
-        origin = fm_field("originSessionId", fm)
+        origin = fm_field("originSessionId", fm) or fm_field("originRef", fm)  # session transcript or PR url —
+        #                                                                        either is a dated origin (provenance)
         heading = (HEAD_RE.search(body) or [None, None])[1] if HEAD_RE.search(body) else None
         title = titles.get(slug) or heading or fm_field("description", fm) or slug
 
@@ -344,9 +345,9 @@ def main():
         if mtype in standing_types:
             grounding = "judgment"          # a standing instruction = a preference, no external oracle
         elif origin:
-            grounding = "provenance"        # a session-origin fact is a DATED RECORD (its transcript), not a
-                                            # citation of the files it merely mentions — provenance beats the
-                                            # incidental anchors (the honest label for the sessions adapter)
+            grounding = "provenance"        # an origin-bearing fact (a transcript, a PR) is a DATED RECORD,
+                                            # not a citation of the files it merely mentions — provenance beats
+                                            # the incidental anchors (the honest label for the adapters)
         elif anchors:
             grounding = "cited"
         else:

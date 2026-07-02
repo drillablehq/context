@@ -130,20 +130,31 @@ SESSIONS_HOME = os.environ.get("DRILLABLE_HOME") or os.path.expanduser("~/.drill
 SESSIONS_CFG = os.path.join(SESSIONS_HOME, "sessions.json")
 SESSIONS_FACTS = os.path.join(SESSIONS_HOME, "sessions")
 SESSIONS_SOURCE = os.environ.get("DRILLABLE_SESSIONS_SOURCE") or os.path.expanduser("~/.claude/projects")
+GITHUB_CFG = os.path.join(SESSIONS_HOME, "github.json")
+GITHUB_FACTS = os.path.join(SESSIONS_HOME, "github")
 
 
-def _import_sessions():
+def _import_adapter(name):
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "adapters"))
-    import sessions
-    return sessions
+    return __import__(name)
+
+
+def _adapter_convert(cfg):
+    """One incremental convert for whichever adapter the corpus declares."""
+    if cfg.get("adapter") == "sessions":
+        return _import_adapter("sessions").convert(cfg["facts_dir"], cfg.get("source") or SESSIONS_SOURCE)
+    if cfg.get("adapter") == "github":
+        return _import_adapter("github").convert(cfg["facts_dir"], cfg.get("repos"),
+                                                 limit=cfg.get("limit") or 200)
+    return {}
 
 
 def _auto_convert(cfg):
-    """For an `adapter: sessions` corpus, keep the facts_dir current by converting NEW transcripts from the
-    source (~/.claude/projects) — the 'updated user path', zero-command. Incremental + throttled (like the
-    auto-fetch), so the query hot path only ever touches genuinely-new sessions. Returns True iff it wrote
+    """For an adapter-backed corpus (sessions, github), keep the facts_dir current by converting NEW
+    source records — the 'updated user path', zero-command. Incremental + throttled (like the
+    auto-fetch), so the query hot path only ever touches genuinely-new records. Returns True iff it wrote
     any fresh `.md` (→ the caller reseeds). Safe/best-effort: any error → False, the last good index stands."""
-    if cfg.get("adapter") != "sessions":
+    if cfg.get("adapter") not in ("sessions", "github"):
         return False
     marker = cfg["_db"] + ".autoconv"
     try:
@@ -154,8 +165,7 @@ def _auto_convert(cfg):
     except Exception:
         pass
     try:
-        r = _import_sessions().convert(cfg["facts_dir"], cfg.get("source") or SESSIONS_SOURCE)
-        return bool(r.get("fresh"))
+        return bool(_adapter_convert(cfg).get("fresh"))
     except Exception:
         return False
 
@@ -547,7 +557,7 @@ def setup_sessions(argv):
 
     win = f" (last {a.days} days)" if a.days else ""
     print(f"drillable-context sessions — indexing {a.projects_dir}{win}", file=sys.stderr)
-    r = _import_sessions().convert(SESSIONS_FACTS, a.projects_dir, since=since, rebuild=a.rebuild)
+    r = _import_adapter("sessions").convert(SESSIONS_FACTS, a.projects_dir, since=since, rebuild=a.rebuild)
     if r.get("error"):
         sys.exit(r["error"])
     print(f"  {r['fresh']} new/updated · {r['written']} sessions total", file=sys.stderr)
@@ -573,9 +583,63 @@ def setup_sessions(argv):
     print("  new sessions are picked up automatically — re-run this only to force a rebuild.", file=sys.stderr)
 
 
+def setup_github(argv):
+    """The FRESH user path — one command: `drillable-context github`. Writes a managed config, converts
+    the repo's CLOSED-PR history → ~/.drillable/github, seeds, and prints the one line that wires the
+    MCP. Thereafter the server keeps it current on its own (see _auto_convert). HISTORY only — open-PR
+    state is liveness, which a snapshot misrepresents; ask that live (`gh pr list --state open`)."""
+    import argparse
+    ap = argparse.ArgumentParser(prog="drillable-context github",
+                                 description="index a repo's merged/closed PR history for grounded drilling")
+    ap.add_argument("--repo", action="append", help="owner/name (repeatable; default: the cwd's repo)")
+    ap.add_argument("--limit", type=int, default=200, help="max PRs per repo, newest first (default 200)")
+    ap.add_argument("--rebuild", action="store_true", help="re-convert every PR (ignore the incremental skip)")
+    a = ap.parse_args(argv)
+
+    gh = _import_adapter("github")
+    repos = a.repo or ([gh.default_repo()] if gh.default_repo() else [])
+    if not repos:
+        sys.exit("no repo — pass --repo owner/name (or run inside a repo gh recognizes)")
+    os.makedirs(GITHUB_FACTS, exist_ok=True)
+    cfg = {"name": "github", "adapter": "github", "facts_dir": GITHUB_FACTS,
+           "repos": repos, "limit": a.limit, "oracle_repo": None, "standing_types": [],
+           "type_field": "type", "recursive": True, "embed": True, "doc2query": False, "rerank": False}
+    with open(GITHUB_CFG, "w", encoding="utf-8") as fh:
+        json.dump(cfg, fh, indent=2)
+
+    print(f"drillable-context github — indexing PR history: {', '.join(repos)}", file=sys.stderr)
+    r = gh.convert(GITHUB_FACTS, repos, limit=a.limit, rebuild=a.rebuild)
+    if r.get("error"):
+        sys.exit(r["error"])
+    print(f"  {r['fresh']} new · {r['written']} PRs total", file=sys.stderr)
+
+    import seed
+    old = sys.argv
+    sys.argv = ["seed", "--config", GITHUB_CFG]
+    try:
+        with contextlib.redirect_stdout(sys.stderr):
+            seed.main()
+    except SystemExit:
+        pass
+    finally:
+        sys.argv = old
+
+    key = "semantic (OPENAI_API_KEY found)" if os.environ.get("OPENAI_API_KEY") else \
+        "keyword only — set OPENAI_API_KEY for semantic search"
+    print(f"\n✓ PR history indexed · {key}", file=sys.stderr)
+    print("  wire it as an MCP (once):", file=sys.stderr)
+    print(f"    claude mcp add drillable-github -- npx drillable-context --config {GITHUB_CFG}", file=sys.stderr)
+    print("  then ask:  drillable-github_search \"when did we ship <x>\"  (history only — for what's OPEN"
+          " right now, ask gh: it's liveness, not record)", file=sys.stderr)
+    print("  newly-closed PRs are picked up automatically — re-run this only to add repos or force a "
+          "rebuild.", file=sys.stderr)
+
+
 def main():
     if sys.argv[1:2] == ["sessions"]:      # the fresh-user setup path (not the MCP stdio server)
         return setup_sessions(sys.argv[2:])
+    if sys.argv[1:2] == ["github"]:        # the PR-history setup path
+        return setup_github(sys.argv[2:])
     cfg = load_cfg(sys.argv[1:])
     tools = build_tools(cfg)
     for line in sys.stdin:
