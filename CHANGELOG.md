@@ -2,8 +2,10 @@
 
 ## 0.6.0
 
-Drill a repo's **GitHub PR history** — the second source adapter — closing half of the in-flight
-blindness gap (the sessions adapter sees session STARTS; this records what SHIPPED).
+**Developer preview.** Drill a repo's **GitHub PR history** — the second source adapter — closing half
+of the in-flight blindness gap (the sessions adapter sees session STARTS; this records what SHIPPED).
+Preview means: it works and is tested, but demand for it is unproven — we shipped it to dogfood the
+concept and find out. Interfaces (command flags, chunk shape, frontmatter) may change with what we learn.
 
 - **`github.py` adapter** — `drillable-context github` converts a repo's merged/closed PRs (via the `gh`
   CLI) into the engine's markdown: one file per PR, chunked as `## Summary` / `## Files touched`,

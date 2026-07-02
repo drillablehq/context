@@ -63,7 +63,7 @@ install never contaminates one project's drills with another's. `search` takes `
 The `project` column comes from each fact's frontmatter (seed.py, schema v2); non-session corpora (no
 `project`) are unaffected — the filter only engages when the corpus carries projects.
 
-## `github.py` — drill a repo's pull-request history
+## `github.py` — drill a repo's pull-request history *(developer preview)*
 
 Converts a repo's **merged/closed** PRs (via the `gh` CLI — auth is gh's, not ours) into markdown: one
 `pr-<n>.md` per PR, chunked by section (`## Summary` — the PR body with its own headings demoted so chunk
