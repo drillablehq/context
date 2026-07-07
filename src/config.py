@@ -39,6 +39,14 @@ def resolve(argv):
     ap.add_argument("--db")
     a, _ = ap.parse_known_args(argv)
 
+    # doc2query/rerank flags + env are resolved ONCE, so BOTH the --config and --facts-dir paths honor
+    # them. (The --config path previously read these from the JSON only — so --no-doc2query and
+    # DRILLABLE_DOC2QUERY silently no-op'd there, contradicting this module's own docstring.) Both stay
+    # opt-*direction*: d2q is an opt-OUT (any of flag/env/JSON-false turns it off, never on); rerank is an
+    # opt-IN (any of flag/env/JSON-true turns it on).
+    d2q_off = a.no_doc2query or os.environ.get("DRILLABLE_DOC2QUERY", "").lower() in ("0", "false", "off")
+    rerank_on = a.rerank or os.environ.get("DRILLABLE_RERANK", "").lower() in ("1", "true")
+
     if a.config:
         p = os.path.abspath(a.config)
         if not os.path.exists(p):
@@ -48,9 +56,11 @@ def resolve(argv):
         cfg["_dir"] = os.path.dirname(p)
         cfg["facts_dir"] = os.path.abspath(os.path.join(cfg["_dir"], cfg["facts_dir"]))
         cfg["_db"] = a.db or os.path.join(cfg["_dir"], f"{cfg['name']}.db")
-        # doc2query bundles with embed: on whenever embed is, unless the config sets it false explicitly.
-        cfg["doc2query"] = bool(cfg.get("embed")) and cfg.get("doc2query", True)
-        cfg["rerank"] = bool(cfg.get("rerank"))   # opt-in; serve-time LLM cost, so never implied
+        # doc2query bundles with embed: on whenever embed is, unless opted out — by the config
+        # ("doc2query": false), --no-doc2query, or DRILLABLE_DOC2QUERY in {0,false,off}.
+        cfg["doc2query"] = bool(cfg.get("embed")) and cfg.get("doc2query", True) and not d2q_off
+        # rerank is opt-in (serve-time LLM cost) — off unless the config, --rerank, or DRILLABLE_RERANK asks.
+        cfg["rerank"] = bool(cfg.get("rerank")) or rerank_on
         return cfg
 
     facts_dir = a.facts_dir or os.environ.get("DRILLABLE_FACTS_DIR")
@@ -65,11 +75,10 @@ def resolve(argv):
             "embed": a.embed or os.environ.get("DRILLABLE_EMBED") in ("1", "true"),
             "_dir": HOME,
         }
-        # doc2query bundles with embed: on whenever embed is, unless explicitly opted out
-        # (--no-doc2query or DRILLABLE_DOC2QUERY in {0,false,off}).
-        d2q_off = a.no_doc2query or os.environ.get("DRILLABLE_DOC2QUERY", "").lower() in ("0", "false", "off")
+        # doc2query bundles with embed (opt-out) / rerank is opt-in — both resolved above so the two
+        # config paths behave identically.
         cfg["doc2query"] = cfg["embed"] and not d2q_off
-        cfg["rerank"] = a.rerank or os.environ.get("DRILLABLE_RERANK", "").lower() in ("1", "true")
+        cfg["rerank"] = rerank_on
         cfg["_db"] = a.db or os.path.join(HOME, f"{a.name}.db")
         return cfg
 
