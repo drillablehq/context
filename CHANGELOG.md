@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.1
+
+Patch — a config-resolution bug fix.
+
+- **`--no-doc2query` / `DRILLABLE_DOC2QUERY` now work under `--config`.** These opt-outs were honored
+  only on the `--facts-dir` path; under `--config` they silently no-op'd (doc2query stayed on),
+  contradicting the documented behavior — so a standalone config-file corpus could only turn doc2query
+  off via a `"doc2query": false` JSON key, not by flag or env. Both resolution paths now resolve the
+  opt-outs identically (doc2query opt-out, rerank opt-in). Adds `test_config.py` covering the matrix
+  across both paths. (Plugin/CLI installs use `--facts-dir`, which already worked, so no user on that
+  path was affected.)
+
 ## 0.6.0
 
 **Developer preview.** Drill a repo's **GitHub PR history** — the second source adapter — closing half
